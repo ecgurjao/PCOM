@@ -1,0 +1,335 @@
+{
+  "options": {
+    "parameters": {
+      "author": "ChatGPT",
+      "category": "Custom",
+      "comment": "OOK demodulator: Complex baseband (from SDR/file) -> |.| -> LPF -> M&M clock recovery -> Threshold -> bits",
+      "description": "Demodulador OOK para GNU Radio 3.10 (entrada I/Q complexa ou arquivo).",
+      "generate_options": "qt_gui",
+      "id": "ook_demod_3_10",
+      "max_nouts": 0,
+      "realtime_scheduling": "default",
+      "run": true,
+      "run_command": "",
+      "run_options": "prompt",
+      "thread_safe_setters": false,
+      "title": "OOK Demod (GRC 3.10)",
+      "author_email": ""
+    }
+  },
+  "blocks": [
+    {
+      "id": "variable_samp_rate",
+      "type": "variable",
+      "parameters": {
+        "id": "samp_rate",
+        "value": "200e3"
+      },
+      "states": {
+        "_enabled": true
+      }
+    },
+    {
+      "id": "variable_bitrate",
+      "type": "variable",
+      "parameters": {
+        "id": "bitrate",
+        "value": "2e3"
+      },
+      "states": {
+        "_enabled": true
+      }
+    },
+    {
+      "id": "variable_sps",
+      "type": "variable",
+      "parameters": {
+        "id": "sps",
+        "value": "int(samp_rate/bitrate)"
+      },
+      "states": {
+        "_enabled": true
+      }
+    },
+    {
+      "id": "variable_thr_low",
+      "type": "variable",
+      "parameters": {
+        "id": "thr_low",
+        "value": "0.2"
+      },
+      "states": {
+        "_enabled": true
+      }
+    },
+    {
+      "id": "variable_thr_high",
+      "type": "variable",
+      "parameters": {
+        "id": "thr_high",
+        "value": "0.5"
+      },
+      "states": {
+        "_enabled": true
+      }
+    },
+    {
+      "id": "variable_alpha",
+      "type": "variable",
+      "parameters": {
+        "id": "alpha",
+        "value": "exp(-2*3.14159*(bitrate/samp_rate))"
+      },
+      "states": {
+        "_enabled": true
+      }
+    },
+    {
+      "id": "variable_mm_omega",
+      "type": "variable",
+      "parameters": {
+        "id": "mm_omega",
+        "value": "sps"
+      },
+      "states": {
+        "_enabled": true
+      }
+    },
+    {
+      "id": "variable_mm_gain_mu",
+      "type": "variable",
+      "parameters": {
+        "id": "mm_gain_mu",
+        "value": "0.175"
+      },
+      "states": {
+        "_enabled": true
+      }
+    },
+    {
+      "id": "variable_mm_mu",
+      "type": "variable",
+      "parameters": {
+        "id": "mm_mu",
+        "value": "0.5"
+      },
+      "states": {
+        "_enabled": true
+      }
+    },
+    {
+      "id": "variable_mm_omega_rel",
+      "type": "variable",
+      "parameters": {
+        "id": "mm_omega_rel",
+        "value": "0.005"
+      },
+      "states": {
+        "_enabled": true
+      }
+    },
+    {
+      "id": "variable_mm_gain_omega",
+      "type": "variable",
+      "parameters": {
+        "id": "mm_gain_omega",
+        "value": "0.25"
+      },
+      "states": {
+        "_enabled": true
+      }
+    },
+    {
+      "id": "blocks_file_source_0",
+      "type": "blocks_file_source",
+      "parameters": {
+        "type": "complex",
+        "file": "/mnt/data/iq_ook_c64.dat",
+        "repeat": "True",
+        "offset": "0"
+      },
+      "states": {
+        "_enabled": true
+      }
+    },
+    {
+      "id": "blocks_throttle_0",
+      "type": "blocks_throttle",
+      "parameters": {
+        "type": "complex",
+        "samples_per_second": "samp_rate",
+        "vlen": "1"
+      },
+      "states": {
+        "_enabled": true
+      }
+    },
+    {
+      "id": "blocks_complex_to_mag_0",
+      "type": "blocks_complex_to_mag",
+      "parameters": {
+        "vlen": "1"
+      },
+      "states": {
+        "_enabled": true
+      }
+    },
+    {
+      "id": "filter_single_pole_iir_filter_xx_0",
+      "type": "filter_single_pole_iir_filter_xx",
+      "parameters": {
+        "type": "float",
+        "alpha": "alpha",
+        "vlen": "1"
+      },
+      "states": {
+        "_enabled": true
+      }
+    },
+    {
+      "id": "digital_clock_recovery_mm_xx_0",
+      "type": "digital_clock_recovery_mm_xx",
+      "parameters": {
+        "type": "float",
+        "omega": "mm_omega",
+        "gain_omega": "mm_gain_omega",
+        "mu": "mm_mu",
+        "gain_mu": "mm_gain_mu",
+        "omega_relative_limit": "mm_omega_rel"
+      },
+      "states": {
+        "_enabled": true
+      }
+    },
+    {
+      "id": "blocks_threshold_ff_0",
+      "type": "blocks_threshold_ff",
+      "parameters": {
+        "low": "thr_low",
+        "high": "thr_high",
+        "init": "0.0"
+      },
+      "states": {
+        "_enabled": true
+      }
+    },
+    {
+      "id": "blocks_float_to_uchar_0",
+      "type": "blocks_float_to_uchar",
+      "parameters": {
+        "vlen": "1"
+      },
+      "states": {
+        "_enabled": true
+      }
+    },
+    {
+      "id": "blocks_unpacked_to_packed_xx_0",
+      "type": "blocks_unpacked_to_packed_xx",
+      "parameters": {
+        "type": "byte",
+        "bits_per_chunk": "1",
+        "endian": "gr.GR_MSB_FIRST"
+      },
+      "states": {
+        "_enabled": true
+      }
+    },
+    {
+      "id": "qtgui_time_sink_x_0",
+      "type": "qtgui_time_sink_x",
+      "parameters": {
+        "type": "float",
+        "name": "Envolt\u00f3ria (|I/Q|)",
+        "samp_rate": "samp_rate",
+        "size": "1024",
+        "ymin": "0.0",
+        "ymax": "2.0",
+        "nconnections": "1",
+        "update_time": "0.1",
+        "ylabel": "Amp",
+        "xlabel": "Tempo",
+        "autoscale": "False"
+      },
+      "states": {
+        "_enabled": true
+      }
+    },
+    {
+      "id": "qtgui_time_sink_x_1",
+      "type": "qtgui_time_sink_x",
+      "parameters": {
+        "type": "float",
+        "name": "P\u00f3s-Clock Recovery",
+        "samp_rate": "bitrate",
+        "size": "1024",
+        "ymin": "-0.2",
+        "ymax": "1.2",
+        "nconnections": "1",
+        "update_time": "0.1",
+        "ylabel": "Amp",
+        "xlabel": "Tempo",
+        "autoscale": "False"
+      },
+      "states": {
+        "_enabled": true
+      }
+    }
+  ],
+  "connections": [
+    [
+      "blocks_file_source_0",
+      "0",
+      "blocks_throttle_0",
+      "0"
+    ],
+    [
+      "blocks_throttle_0",
+      "0",
+      "blocks_complex_to_mag_0",
+      "0"
+    ],
+    [
+      "blocks_complex_to_mag_0",
+      "0",
+      "filter_single_pole_iir_filter_xx_0",
+      "0"
+    ],
+    [
+      "filter_single_pole_iir_filter_xx_0",
+      "0",
+      "qtgui_time_sink_x_0",
+      "0"
+    ],
+    [
+      "filter_single_pole_iir_filter_xx_0",
+      "0",
+      "digital_clock_recovery_mm_xx_0",
+      "0"
+    ],
+    [
+      "digital_clock_recovery_mm_xx_0",
+      "0",
+      "qtgui_time_sink_x_1",
+      "0"
+    ],
+    [
+      "digital_clock_recovery_mm_xx_0",
+      "0",
+      "blocks_threshold_ff_0",
+      "0"
+    ],
+    [
+      "blocks_threshold_ff_0",
+      "0",
+      "blocks_float_to_uchar_0",
+      "0"
+    ],
+    [
+      "blocks_float_to_uchar_0",
+      "0",
+      "blocks_unpacked_to_packed_xx_0",
+      "0"
+    ]
+  ]
+}
